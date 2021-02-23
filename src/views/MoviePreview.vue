@@ -116,6 +116,7 @@
 import Navbar from "../components/Navbar";
 import ratingMixin from "../mixins/getRatingColor";
 import Modal from "../components/Modal";
+import moviesApi from "../services/moviesApi";
 
 export default {
   mixins: [ratingMixin],
@@ -131,7 +132,7 @@ export default {
   },
   props: {
     id: {
-      type: Number,
+      type: [String, Number],
       default: null,
     },
   },
@@ -141,12 +142,21 @@ export default {
       this.showModal = false;
     },
     deleteMovie() {
-      this.$store.dispatch("deleteMovie", parseInt(this.id));
-      this.$router.push("/");
+      this.$store
+        .dispatch("deleteMovie", this.id)
+        .then((res) => this.$router.push("/"));
     },
   },
   created() {
-    this.movie = this.$store.getters.getMovieByID(parseInt(this.id));
+    const movie = this.$store.getters.getMovieByID(parseInt(this.id));
+    if (movie) {
+      this.movie = movie;
+    } else {
+      moviesApi
+        .getMovieByID(this.id)
+        .then((res) => (this.movie = res))
+        .catch((err) => console.log(err));
+    }
   },
 };
 </script>
